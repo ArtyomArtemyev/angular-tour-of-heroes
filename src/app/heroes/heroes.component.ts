@@ -12,6 +12,8 @@ import {Subscription} from "rxjs/index";
 export class HeroesComponent implements OnInit, OnDestroy {
 
   sub1: Subscription;
+  sub2: Subscription;
+  sub3: Subscription;
   selectedHero: Hero;
   heroes: Hero [];
 
@@ -22,18 +24,41 @@ export class HeroesComponent implements OnInit, OnDestroy {
     this.getHeroes();
   }
 
+  ngOnDestroy(): void {
+    if (this.sub1) {
+      this.sub1.unsubscribe();
+    }
+    if (this.sub2) {
+      this.sub2.unsubscribe();
+    }
+    if (this.sub3) {
+      this.sub3.unsubscribe();
+    }
+  }
+
   onSelect(hero: Hero) {
     this.selectedHero = hero;
   }
 
   getHeroes(): void {
-    this.heroService.getHeroes()
+    this.sub1 = this.heroService.getHeroes()
       .subscribe(heroes => this.heroes = heroes);
   }
 
-  ngOnDestroy(): void {
-    if (this.sub1) {
-      this.sub1.unsubscribe();
+  add(name: string): void {
+    name = name.trim();
+    if (!name) {
+      return;
     }
+    this.sub2 = this.heroService.addHero({name} as Hero)
+      .subscribe(hero => {
+        this.heroes.push(hero);
+      });
   }
+
+  delete(hero: Hero): void {
+    this.heroes = this.heroes.filter(h => h !== hero);
+    this.sub3 = this.heroService.deleteHero(hero).subscribe();
+  }
+
 }
